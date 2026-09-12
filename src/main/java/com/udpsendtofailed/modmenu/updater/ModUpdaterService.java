@@ -1,7 +1,5 @@
 package com.udpsendtofailed.modmenu.updater;
 
-import com.google.common.hash.Hashing;
-import com.google.common.io.Files;
 import com.terraformersmc.modmenu.ModMenu;
 import com.terraformersmc.modmenu.gui.ModsScreen;
 import com.udpsendtofailed.modmenu.updater.api.ModExtension;
@@ -20,8 +18,12 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -93,7 +95,7 @@ public class ModUpdaterService {
                 tempFile = downloadFile(info.getDownloadUrl());
 
                 if (info.getFileHash() != null) {
-                    String downloadedHash = Files.asByteSource(tempFile.toFile()).hash(Hashing.sha512()).toString();
+                    String downloadedHash = sha512(tempFile);
                     if (!info.getFileHash().equalsIgnoreCase(downloadedHash)) {
                         throw new IOException("File hash mismatch");
                     }
@@ -150,6 +152,22 @@ public class ModUpdaterService {
             java.nio.file.Files.copy(is, tempFile, StandardCopyOption.REPLACE_EXISTING);
         }
         return tempFile;
+    }
+
+    private static String sha512(Path file) throws IOException {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-512");
+            try (InputStream is = Files.newInputStream(file)) {
+                byte[] buffer = new byte[8192];
+                int read;
+                while ((read = is.read(buffer)) != -1) {
+                    digest.update(buffer, 0, read);
+                }
+            }
+            return HexFormat.of().formatHex(digest.digest());
+        } catch (NoSuchAlgorithmException e) {
+            throw new IOException("SHA-512 algorithm not available", e);
+        }
     }
 
     private Optional<Path> findModJar(Mod mod) {
