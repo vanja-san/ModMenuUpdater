@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Shadow;
 
 // Target the inner class
 @Mixin(targets = "com.terraformersmc.modmenu.gui.widget.DescriptionListWidget$DescriptionEntry")
-public abstract class MixinDescriptionEntry extends ContainerObjectSelectionList.Entry implements DescriptionEntryExtension {
+public abstract class MixinDescriptionEntry extends ContainerObjectSelectionList.Entry<MixinDescriptionEntry> implements DescriptionEntryExtension {
     
     // Shadow the public field from the original Mod Menu code
     @Shadow public boolean updateTextEntry;

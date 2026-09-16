@@ -33,7 +33,6 @@ import java.util.concurrent.ThreadFactory;
 
 public class ModUpdaterService {
     public static final Logger LOGGER = LoggerFactory.getLogger("Mod Menu Updater");
-    private final ModsScreen screen;
     private final Path modsDir = FabricLoader.getInstance().getGameDir().resolve("mods");
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
     private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(4, new ThreadFactory() {
@@ -47,7 +46,6 @@ public class ModUpdaterService {
     });
 
     public ModUpdaterService(ModsScreen screen) {
-        this.screen = screen;
     }
 
     public void performUpdateAll() {
