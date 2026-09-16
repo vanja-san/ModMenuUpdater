@@ -23,20 +23,19 @@ import java.lang.reflect.Constructor;
 public abstract class MixinDescriptionListWidget {
     private static final Logger LOGGER = LoggerFactory.getLogger("Mod Menu Updater");
 
-    @Shadow private Mod selectedMod;
-    @Shadow private Font textRenderer;
-    @Shadow public abstract int getRowWidth();
+    @Shadow
+    private Mod selectedMod;
+    @Shadow
+    private Font textRenderer;
 
-    @Redirect(
-        method = "rebuildUI", 
-        at = @At(
-            value = "INVOKE", 
-            target = "Lcom/terraformersmc/modmenu/config/option/BooleanConfigOption;getValue()Z"
-        )
-    )
+    @Shadow
+    public abstract int getRowWidth();
+
+    @Redirect(method = "rebuildUI", at = @At(value = "INVOKE", target = "Lcom/terraformersmc/modmenu/config/option/BooleanConfigOption;getValue()Z"))
     private boolean interceptUpdateCheck(BooleanConfigOption instance) {
         boolean originalValue = instance.getValue();
-        if (!originalValue) return false;
+        if (!originalValue)
+            return false;
 
         if (selectedMod instanceof ModExtension ext && ext.isUpdateDownloaded()) {
             int width = getRowWidth() - 5;
@@ -44,12 +43,15 @@ public abstract class MixinDescriptionListWidget {
             addDescriptionEntry(FormattedCharSequence.EMPTY, false);
 
             for (FormattedCharSequence line : textRenderer.split(
-                    Component.translatable("modmenu.update.state.widget.updated").withStyle(ChatFormatting.GREEN), width)) {
+                    Component.translatable("modmenu.update.state.widget.updated").withStyle(ChatFormatting.GREEN),
+                    width)) {
                 addDescriptionEntry(line, true);
             }
 
             for (FormattedCharSequence line : textRenderer.split(
-                    Component.translatable("modmenu.update.state.widget.restartRequired").withStyle(ChatFormatting.GRAY), width)) {
+                    Component.translatable("modmenu.update.state.widget.restartRequired")
+                            .withStyle(ChatFormatting.GRAY),
+                    width)) {
                 addDescriptionEntry(line, false);
             }
 
@@ -58,14 +60,14 @@ public abstract class MixinDescriptionListWidget {
         return originalValue;
     }
 
-    @SuppressWarnings("unchecked")
     private void addDescriptionEntry(FormattedCharSequence text, boolean isBadge) {
         try {
             DescriptionListWidget self = (DescriptionListWidget) (Object) this;
 
             Class<?> entryClass = Class.forName(
                     "com.terraformersmc.modmenu.gui.widget.DescriptionListWidget$DescriptionEntry");
-            Constructor<?> ctor = entryClass.getDeclaredConstructor(DescriptionListWidget.class, FormattedCharSequence.class);
+            Constructor<?> ctor = entryClass.getDeclaredConstructor(DescriptionListWidget.class,
+                    FormattedCharSequence.class);
             ctor.setAccessible(true);
             var entry = (AbstractSelectionList.Entry<?>) ctor.newInstance(self, text);
 
